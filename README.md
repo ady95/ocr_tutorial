@@ -21,7 +21,10 @@ python ocr_tutorial/ch02/check_env.py
 
 | 폴더 | 내용 |
 |---|---|
+| common | 공통 평가 도구 (CER 계산, 평가셋 읽기, 좌표 계산) |
+| datasets/ko-ocr-bench | 한국어 OCR 평가셋 (가상 문서 140장 + 정답, CC BY 4.0) |
 | ch02 | 실습 환경 점검 스크립트(check_env.py), CPU용 Dockerfile |
+| ch04 | Tesseract·PaddleOCR·EasyOCR 첫 실행과 평가셋 측정 스크립트 |
 
 ## 실측 환경
 

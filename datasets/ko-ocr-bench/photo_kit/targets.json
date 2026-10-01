@@ -1,0 +1,146 @@
+{
+ "print": [
+  {
+   "photo_id": "P01",
+   "parent": "doc_ko_01"
+  },
+  {
+   "photo_id": "P02",
+   "parent": "doc_ko_02"
+  },
+  {
+   "photo_id": "P03",
+   "parent": "doc_ko_03"
+  },
+  {
+   "photo_id": "P04",
+   "parent": "doc_mixed_01"
+  },
+  {
+   "photo_id": "P05",
+   "parent": "doc_mixed_02"
+  },
+  {
+   "photo_id": "P06",
+   "parent": "doc_mixed_03"
+  },
+  {
+   "photo_id": "P07",
+   "parent": "doc_numeric_01"
+  },
+  {
+   "photo_id": "P08",
+   "parent": "doc_numeric_02"
+  },
+  {
+   "photo_id": "P09",
+   "parent": "doc_numeric_03"
+  },
+  {
+   "photo_id": "P10",
+   "parent": "receipt_01"
+  },
+  {
+   "photo_id": "P11",
+   "parent": "receipt_02"
+  },
+  {
+   "photo_id": "P12",
+   "parent": "receipt_03"
+  },
+  {
+   "photo_id": "P13",
+   "parent": "receipt_04"
+  },
+  {
+   "photo_id": "P14",
+   "parent": "invoice_01"
+  },
+  {
+   "photo_id": "P15",
+   "parent": "invoice_02"
+  },
+  {
+   "photo_id": "P16",
+   "parent": "card_01"
+  },
+  {
+   "photo_id": "P17",
+   "parent": "card_02"
+  },
+  {
+   "photo_id": "P18",
+   "parent": "card_03"
+  },
+  {
+   "photo_id": "P19",
+   "parent": "table_01"
+  },
+  {
+   "photo_id": "P20",
+   "parent": "table_02"
+  }
+ ],
+ "handwriting": [
+  {
+   "photo_id": "H01",
+   "text": "오늘 회의는 오후 3시에 2층 회의실에서 시작합니다."
+  },
+  {
+   "photo_id": "H02",
+   "text": "택배는 문 앞에 두고 가 주세요."
+  },
+  {
+   "photo_id": "H03",
+   "text": "우유 2개, 계란 1판, 식빵 1봉지 사 오기"
+  },
+  {
+   "photo_id": "H04",
+   "text": "다음 주 화요일까지 보고서를 제출해 주세요."
+  },
+  {
+   "photo_id": "H05",
+   "text": "주차장은 지하 1층부터 3층까지 이용할 수 있습니다."
+  },
+  {
+   "photo_id": "H06",
+   "text": "전화번호: 010-0000-1234"
+  },
+  {
+   "photo_id": "H07",
+   "text": "합계 금액은 32,500원입니다."
+  },
+  {
+   "photo_id": "H08",
+   "text": "2026년 10월 15일 수요일 맑음"
+  },
+  {
+   "photo_id": "H09",
+   "text": "Wi-Fi 비밀번호는 안내데스크에 문의하세요."
+  },
+  {
+   "photo_id": "H10",
+   "text": "약은 하루 세 번 식후 30분에 드세요."
+  },
+  {
+   "photo_id": "H11",
+   "text": "회의록 작성: 김민서, 검토: 이도현"
+  },
+  {
+   "photo_id": "H12",
+   "text": "OCR 따라하기 손글씨 인식 테스트"
+  },
+  {
+   "photo_id": "H13",
+   "text": "버스는 15분 간격으로 운행합니다."
+  },
+  {
+   "photo_id": "H14",
+   "text": "냉장고에 반찬이 있으니 데워 드세요."
+  },
+  {
+   "photo_id": "H15",
+   "text": "주소: 새빛시 한마음구 예시로 123"
+  }
+ ]
+}

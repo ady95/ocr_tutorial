@@ -4,3 +4,9 @@ __pycache__/
 .ipynb_checkpoints/
 .env
 output/
+datasets/ko-ocr-bench/fonts/*.ttf
+datasets/ko-ocr-bench/fonts/OFL.txt
+datasets/ko-ocr-bench/build/_tmp/
+datasets/ko-ocr-bench/build/_overlay/
+ch*/output/
+ch*/_probe.py
