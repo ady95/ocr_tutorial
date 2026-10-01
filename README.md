@@ -26,13 +26,15 @@ python ocr_tutorial/ch02/check_env.py
 | ch01 | CER·WER·자모 CER 직접 구현 (cer_wer.py) |
 | ch02 | 실습 환경 점검 스크립트(check_env.py), CPU용 Dockerfile |
 | ch03 | 전처리 효과 측정 (밝기·기하 보정, 도구별 파이프라인), 본문 그림 생성 |
-| ch07 | PP-StructureV3 레이아웃·표(TEDS) 평가, 표 내보내기, 시험용 PDF, PDF → Markdown 변환기 |
-| ch06 | OCR 결과 저장, 규칙 후처리, LLM 보정·hallucination 측정, 앙상블, 영수증 필드 추출·검증 |
-| ch05 | 검출 모델 비교, DBNet 후처리 설정, 문자 사전 확인, 인식 모델 세대 비교 |
 | ch04 | Tesseract·PaddleOCR·EasyOCR 첫 실행과 평가셋 측정 스크립트 |
+| ch05 | 검출 모델 비교, DBNet 후처리 설정, 문자 사전 확인, 인식 모델 세대 비교 |
+| ch06 | OCR 결과 저장, 규칙 후처리, LLM 보정·hallucination 측정, 앙상블, 영수증 필드 추출·검증 |
+| ch07 | PP-StructureV3 레이아웃·표(TEDS) 평가, 표 내보내기, 시험용 PDF, PDF → Markdown 변환기 |
+| ch08 | VLM 측정: PaddleOCR-VL(이미지·PDF), Surya OCR 2(GPU·CPU), OpenAI 호환 서버용 VLM 벤치(Qwen3.5·VARCO·DeepSeek-OCR 2), 이미지 → JSON·문서 질의응답 |
 
 ## 실측 환경
 
 - Ubuntu 24.04, CPU 전용 (4코어, 16GB)
 - Ubuntu 22.04, NVIDIA RTX 3060 12GB
+- Ubuntu 22.04, NVIDIA RTX 3090 24GB x 2 (03·07장 일부, 08장~)
 - Python 3.12, PyTorch 2.14.1, OpenCV 5.0.0
