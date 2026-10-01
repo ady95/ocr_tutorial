@@ -28,12 +28,16 @@ DIGIT_LIKE = {"O": "0", "o": "0", "D": "0", "I": "1", "l": "1", "|": "1", "S": "
 DIGIT_CONTEXT = re.compile(r"(?<=[\d,.])([OoDIl|SB])(?=[\d,.])")
 
 
+def to_digit(match):
+    return DIGIT_LIKE[match.group(1)]
+
+
 def fix_digit_context(text):
     """양옆이 숫자(또는 쉼표·마침표)인 영문자만 숫자로 바꿉니다."""
     prev = None
     while prev != text:  # 1OO0처럼 연속된 경우를 위해 바뀌지 않을 때까지 반복
         prev = text
-        text = DIGIT_CONTEXT.sub(lambda m: DIGIT_LIKE[m.group(1)], text)
+        text = DIGIT_CONTEXT.sub(to_digit, text)
     return text
 
 
@@ -42,10 +46,13 @@ def normalize_phone(text):
     return re.sub(r"\b(0\d{1,2})[ .](\d{3,4})[ .](\d{4})\b", r"\1-\2-\3", text)
 
 
+def iso_date(match):
+    return f"{match.group(1)}-{int(match.group(2)):02d}-{int(match.group(3)):02d}"
+
+
 def normalize_date(text):
     """2026. 3. 15. / 2026.03.15 를 2026-03-15 형식으로 통일합니다 (원문이 하이픈 형식인 문서용)."""
-    return re.sub(r"\b(20\d{2})\. ?(\d{1,2})\. ?(\d{1,2})\.?(?!\d)",
-                  lambda m: f"{m.group(1)}-{int(m.group(2)):02d}-{int(m.group(3)):02d}", text)
+    return re.sub(r"\b(20\d{2})\. ?(\d{1,2})\. ?(\d{1,2})\.?(?!\d)", iso_date, text)
 
 
 def apply_rules(text):
