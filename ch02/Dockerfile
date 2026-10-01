@@ -1,4 +1,4 @@
-# OCR 따라하기 04장 — CPU용 OCR 실습 이미지
+# OCR 따라하기 02장 — CPU용 OCR 실습 이미지
 # 빌드: docker build -t ocr-book:cpu .
 # 실행: docker run --rm -v "$PWD":/work ocr-book:cpu python check_env.py
 FROM python:3.12-slim

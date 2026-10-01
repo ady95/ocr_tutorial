@@ -1,4 +1,4 @@
-"""OCR 따라하기 04장 — 실습 환경 점검 스크립트.
+"""OCR 따라하기 02장 — 실습 환경 점검 스크립트.
 
 설치된 도구와 GPU 사용 가능 여부를 한 번에 확인합니다.
 설치되지 않은 항목은 '미설치'로 표시하고 계속 진행합니다.
@@ -77,7 +77,7 @@ def check_system_tools():
     smi = check_tool("nvidia-smi", ["--query-gpu=name,driver_version", "--format=csv,noheader"])
     print(f"  nvidia-smi: {smi or '없음 (NVIDIA GPU 미사용)'}")
     tess = check_tool("tesseract", ["--version"])
-    print(f"  tesseract : {tess or '미설치 (06장에서 설치)'}")
+    print(f"  tesseract : {tess or '미설치 (04장에서 설치)'}")
     docker = check_tool("docker", ["--version"])
     print(f"  docker    : {docker or '미설치 (선택 사항)'}")
 
