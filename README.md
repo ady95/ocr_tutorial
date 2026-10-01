@@ -26,6 +26,7 @@ python ocr_tutorial/ch02/check_env.py
 | ch01 | CER·WER·자모 CER 직접 구현 (cer_wer.py) |
 | ch02 | 실습 환경 점검 스크립트(check_env.py), CPU용 Dockerfile |
 | ch03 | 전처리 효과 측정 (밝기·기하 보정, 도구별 파이프라인), 본문 그림 생성 |
+| ch05 | 검출 모델 비교, DBNet 후처리 설정, 문자 사전 확인, 인식 모델 세대 비교 |
 | ch04 | Tesseract·PaddleOCR·EasyOCR 첫 실행과 평가셋 측정 스크립트 |
 
 ## 실측 환경
