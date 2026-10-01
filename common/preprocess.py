@@ -6,6 +6,20 @@ import cv2
 import numpy as np
 
 
+def read_image(path):
+    """한글 등 비ASCII 문자가 든 경로에서도 이미지를 읽습니다 (Windows에서 cv2.imread는 None을 돌려줌)."""
+    return cv2.imdecode(np.fromfile(str(path), dtype=np.uint8), cv2.IMREAD_COLOR)
+
+
+def write_image(path, img):
+    """한글 경로에도 이미지를 저장합니다. 확장자(.png, .jpg)로 형식을 정합니다."""
+    ext = str(path)[str(path).rfind("."):]
+    ok, buf = cv2.imencode(ext, img)
+    if ok:
+        buf.tofile(str(path))
+    return ok
+
+
 def to_gray(img):
     """컬러 이미지를 흑백으로 바꿉니다. 이미 흑백이면 그대로 돌려줍니다."""
     return img if img.ndim == 2 else cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -100,10 +114,13 @@ def order_corners(pts):
     return np.float32([pts[np.argmin(s)], pts[np.argmin(d)], pts[np.argmax(s)], pts[np.argmax(d)]])
 
 
-def find_document(img, min_area_ratio=0.3):
-    """이미지에서 가장 큰 사각형(문서 영역)의 네 꼭짓점을 찾습니다. 못 찾으면 None."""
+def find_document(img, min_area_ratio=0.3, canny_low=10, canny_high=30):
+    """이미지에서 가장 큰 사각형(문서 영역)의 네 꼭짓점을 찾습니다. 못 찾으면 None.
+
+    흰 종이가 밝은 책상 위에 있으면 경계의 밝기 차이가 작으므로 Canny 문턱값을 낮게 둡니다.
+    """
     gray = to_gray(img)
-    edges = cv2.Canny(cv2.GaussianBlur(gray, (5, 5), 0), 30, 100)
+    edges = cv2.Canny(cv2.GaussianBlur(gray, (5, 5), 0), canny_low, canny_high)
     edges = cv2.dilate(edges, np.ones((5, 5), np.uint8))
     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     area_min = min_area_ratio * img.shape[0] * img.shape[1]
