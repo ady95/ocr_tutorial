@@ -1,0 +1,26 @@
+# 11장 — FastAPI OCR 서버, NVIDIA GPU용 이미지 (CUDA 12.6용 PaddlePaddle)
+# 빌드: docker build -f Dockerfile.gpu -t ocr-server:gpu .
+# 실행: docker run -d --name ocr-gpu --gpus '"device=0"' -p 8000:8000 ocr-server:gpu
+#       (호스트에 NVIDIA 드라이버와 NVIDIA Container Toolkit 필요)
+FROM python:3.12-slim
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# GPU용 PaddlePaddle은 공식 패키지 서버에서 받음 (PyPI의 paddlepaddle-gpu는 오래된 버전, 04-2)
+RUN pip install --no-cache-dir paddlepaddle-gpu==3.3.1 -i https://www.paddlepaddle.org.cn/packages/stable/cu126/
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
+
+# GPU용 Paddle은 import할 때 GPU 드라이버(libcuda.so.1)를 찾는데, 빌드 중에는 없음.
+# 그래서 Paddle을 부르지 않고 모델 파일만 PaddleX 모델 폴더에 받아 둠
+ENV PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True
+RUN python -c "from huggingface_hub import snapshot_download as d; \
+[d(f'PaddlePaddle/{m}', local_dir=f'/root/.paddlex/official_models/{m}') for m in ('PP-OCRv5_server_det', 'korean_PP-OCRv5_mobile_rec')]"
+
+WORKDIR /app
+COPY app.py /app/app.py
+ENV OCR_DEVICE=gpu
+EXPOSE 8000
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

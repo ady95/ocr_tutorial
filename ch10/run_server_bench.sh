@@ -11,6 +11,8 @@ ENGINE=$1; MODEL=$2; GPU=$3; PORT=$4; PY=$5; shift 5
 [ "$1" = "--" ] && shift
 cd "$(dirname "$0")"
 mkdir -p output
+# 다른 서비스가 이미 쓰는 포트면 그 서비스에 요청을 보내게 되므로 시작 전에 확인
+if (ss -ltn 2>/dev/null || netstat -ltn 2>/dev/null) | grep -qE "[:.]$PORT[[:space:]]"; then echo "포트 $PORT 사용 중 — 다른 포트를 지정하세요"; exit 1; fi
 T0=$(date +%s)
 CUDA_VISIBLE_DEVICES=$GPU vllm serve $MODEL --port $PORT --max-model-len 16384 "$@" > output/serve_$ENGINE.log 2>&1 &
 SPID=$!

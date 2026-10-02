@@ -5,6 +5,7 @@
 
   tesseract   04장  kor+eng, PSM 4
   paddle      04장  PaddleOCR lang="korean" (PP-OCRv5 검출 + 한국어 인식)
+  rapidocr    11장  RapidOCR: 같은 모델을 ONNX Runtime으로
   paddlevl    08장  PaddleOCR-VL-1.6 (vLLM 서버)
   surya       08장  Surya OCR 2
   deepseek    08장  DeepSeek-OCR 2, transformers 공식 방법 + markdown 프롬프트
@@ -49,6 +50,23 @@ class Paddle(Engine):
 
     def run(self, path):
         return "\n".join(self.ocr.predict(path)[0]["rec_texts"]), []
+
+
+class Rapid(Engine):
+    """RapidOCR: PaddleOCR과 같은 모델(PP-OCRv5 server 검출 + 한국어 PP-OCRv5 mobile 인식)을 ONNX Runtime으로 실행 (11장)."""
+
+    def __init__(self, det="server"):
+        from rapidocr import LangRec, ModelType, OCRVersion, RapidOCR
+        self.ocr = RapidOCR(params={
+            "Global.use_cls": False,
+            "Det.ocr_version": OCRVersion.PPOCRV5, "Det.model_type": ModelType.SERVER if det == "server" else ModelType.MOBILE,
+            "Det.limit_side_len": 64, "Det.limit_type": "min",  # PaddleOCR 파이프라인 기본값과 같게
+            "Rec.lang_type": LangRec.KOREAN, "Rec.ocr_version": OCRVersion.PPOCRV5, "Rec.model_type": ModelType.MOBILE,
+        })
+
+    def run(self, path):
+        out = self.ocr(str(path))
+        return "\n".join(out.txts or []), []
 
 
 class PaddleVL(Engine):
@@ -178,6 +196,7 @@ ENGINES = {
     "tesseract": Tesseract,
     "paddle": Paddle,
     "paddlevl": PaddleVL,
+    "rapidocr": Rapid,
     "surya": Surya,
     "deepseek": DeepSeek,
     "qwen": lambda **kw: ApiVLM("qwen", kw.pop("model", "Qwen/Qwen3.5-4B"), **{"presence_penalty": 1.5, **kw}),
