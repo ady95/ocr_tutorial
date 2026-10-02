@@ -28,6 +28,7 @@ from openai import OpenAI
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "common"))
+from mdtext import markdown_to_text, table_cells  # noqa: E402,F401
 from ocr_eval import cer, load_samples  # noqa: E402
 from teds import teds  # noqa: E402
 
@@ -45,33 +46,6 @@ DEEPSEEK_PROMPTS = {  # vLLM 레시피: 지시문보다 짧은 기본 프롬프�
     "free": "Free OCR.",
     "markdown": "<|grounding|>Convert the document to markdown.",
 }
-
-
-def table_cells(table_html):
-    from lxml import html
-    root = html.fromstring(table_html)
-    return [" ".join("".join(c.itertext()).split()) for c in root.iter("td", "th")]
-
-
-def markdown_to_text(md):
-    """VLM의 Markdown·HTML 출력을 평가용 글자로 바꿉니다. 표는 칸마다 한 줄로 꺼냅니다."""
-    md = re.sub(r"^```\w*\s*$", "", md, flags=re.M)  # 코드 블록 울타리
-    tables = re.findall(r"<table.*?</table>", md, flags=re.S | re.I)
-    for t in tables:
-        md = md.replace(t, "\n" + "\n".join(table_cells(t)) + "\n")
-    lines = []
-    for line in md.splitlines():
-        s = line.strip()
-        if re.fullmatch(r"\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?", s):  # Markdown 표 구분선
-            continue
-        if s.startswith("|") and s.endswith("|"):
-            lines.extend(c.strip() for c in s.strip("|").split("|"))
-            continue
-        s = re.sub(r"^#{1,6}\s+", "", s)                  # 제목
-        s = re.sub(r"\*\*(.+?)\*\*|__(.+?)__", r"\1\2", s)       # 굵게
-        s = re.sub(r"<[^>]+>", "", s)                     # 남은 HTML 태그
-        lines.append(s)
-    return "\n".join(x for x in lines if x.strip()), tables
 
 
 def deepseek_clean(text):
