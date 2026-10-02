@@ -33,6 +33,14 @@ def cer(reference, hypothesis, keep_space=True):
     return jiwer.cer(ref, hyp)
 
 
+def wer(reference, hypothesis):
+    """단어 오류율(Word Error Rate). 한국어는 공백으로 나눈 어절이 단위라 띄어쓰기 오류도 틀린 단어가 됩니다."""
+    ref, hyp = normalize(reference), normalize(hypothesis)
+    if not ref:
+        return 0.0 if not hyp else 1.0
+    return jiwer.wer(ref, hyp)
+
+
 def load_samples(categories=None, dataset=DATASET):
     """manifest.jsonl을 읽어 (메타 정보, 정답) 목록을 돌려줍니다."""
     samples = []

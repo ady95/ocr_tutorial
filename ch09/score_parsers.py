@@ -69,7 +69,7 @@ def mineru_json_to_md(data):
     """
     parts = []
     for page in data["pages"]:
-        blocks = page["blocks"]
+        blocks = page.get("blocks", [])  # 블록을 하나도 찾지 못한 쪽에는 blocks 키가 없음
         top = sorted((b for b in blocks if b["type"] == "header"), key=lambda b: b["bbox"][1])
         body = [b for b in blocks if b["type"] not in ("header", "footer")]
         bottom = sorted((b for b in blocks if b["type"] == "footer"), key=lambda b: b["bbox"][1])

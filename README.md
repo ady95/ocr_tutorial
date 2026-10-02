@@ -23,6 +23,7 @@ python ocr_tutorial/ch02/check_env.py
 |---|---|
 | common | 공통 평가 도구 (CER 계산, 평가셋 읽기, 좌표 계산) |
 | datasets/ko-ocr-bench | 한국어 OCR 평가셋 (가상 문서 140장 + 정답, CC BY 4.0) |
+| datasets/aihub-local | (저장소에 없음) AI Hub 실제 사진 평가셋. AI Hub에서 직접 내려받아 ch10/aihub_prepare.py로 만듦 |
 | ch01 | CER·WER·자모 CER 직접 구현 (cer_wer.py) |
 | ch02 | 실습 환경 점검 스크립트(check_env.py), CPU용 Dockerfile |
 | ch03 | 전처리 효과 측정 (밝기·기하 보정, 도구별 파이프라인), 본문 그림 생성 |
@@ -31,6 +32,8 @@ python ocr_tutorial/ch02/check_env.py
 | ch06 | OCR 결과 저장, 규칙 후처리, LLM 보정·hallucination 측정, 앙상블, 영수증 필드 추출·검증 |
 | ch07 | PP-StructureV3 레이아웃·표(TEDS) 평가, 표 내보내기, 시험용 PDF, PDF → Markdown 변환기 |
 | ch08 | VLM 측정: PaddleOCR-VL(이미지·PDF), Surya OCR 2(GPU·CPU), OpenAI 호환 서버용 VLM 벤치(Qwen3.5·VARCO·DeepSeek-OCR 2), 이미지 → JSON·문서 질의응답 |
+| ch09 | 문서 파싱 도구: MinerU·Docling 변환 결과 채점(PDF·Office·이미지), Docling OCR 엔진·신뢰도 기준 실험, Office 시험 문서 생성 |
+| ch10 | OCR Benchmark: 엔진 어댑터(engines.py)·실행기(bench.py)·채점기(score.py), vLLM 서버 실행 스크립트, AI Hub 데이터 변환(aihub_prepare.py) |
 
 ## 실측 환경
 
