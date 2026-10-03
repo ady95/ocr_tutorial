@@ -55,7 +55,7 @@ def make_engine(name):
     import pytesseract
 
     def run(img):
-        return pytesseract.image_to_string(img, lang="kor+eng", config="--psm 4")
+        return pytesseract.image_to_string(pp.to_rgb(img), lang="kor+eng", config="--psm 4")  # cv2는 BGR
     return run
 
 

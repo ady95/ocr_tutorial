@@ -51,9 +51,10 @@ def score_ko(result, gt):
         if meta["category"] == "table":
             tables.append(teds(r["tables"][0] if r.get("tables") else "", g["table_html"]))
         over += overflow(g["text"], r["text"])
-    return {"cat": {k: statistics.mean(v) for k, v in per_cat.items()}, "CER": statistics.mean(scores),
-            "중앙값": statistics.median(scores), "WER": statistics.mean(words), "180도 제외": statistics.mean(upright),
-            "표 TEDS": statistics.mean(tables), "실패(CER>0.5)": sum(c > 0.5 for c in scores), "과잉 출력": over}
+    mean = lambda v: statistics.mean(v) if v else None  # noqa: E731  일부만 잰 결과에는 표·180도 이미지가 없을 수 있음
+    return {"cat": {k: statistics.mean(v) for k, v in per_cat.items()}, "장 수": len(scores), "CER": statistics.mean(scores),
+            "중앙값": statistics.median(scores), "WER": statistics.mean(words), "180도 제외": mean(upright),
+            "표 TEDS": mean(tables), "실패(CER>0.5)": sum(c > 0.5 for c in scores), "과잉 출력": over}
 
 
 def words_of(text):
@@ -133,6 +134,8 @@ def detection(engine, threshold=0.5):
 
 
 def fmt(v):
+    if v is None:
+        return "-"  # 해당 이미지가 없어 계산하지 않음
     return f"{v:.3f}" if isinstance(v, float) else str(v)
 
 
@@ -162,9 +165,9 @@ def main():
         lines += [f"## {dataset}", "", "| 엔진 | " + " | ".join(cols) + " |", "|---" * (len(cols) + 1) + "|"]
         lines += [f"| {e} | " + " | ".join(fmt(r.get(c, "")) for c in cols) + " |" for e, r in rows.items()]
         if dataset == "ko":
-            cats = sorted(next(iter(rows.values()))["cat"])
+            cats = sorted({c for r in rows.values() for c in r["cat"]})  # 엔진마다 잰 범주가 다를 수 있음
             lines += ["", "| 엔진 | " + " | ".join(cats) + " |", "|---" * (len(cats) + 1) + "|"]
-            lines += [f"| {e} | " + " | ".join(fmt(r["cat"][c]) for c in cats) + " |" for e, r in rows.items()]
+            lines += [f"| {e} | " + " | ".join(fmt(r["cat"].get(c)) for c in cats) + " |" for e, r in rows.items()]
         lines.append("")
     report = "\n".join(lines)
     (HERE / "output" / "report.md").write_text(report, encoding="utf-8")

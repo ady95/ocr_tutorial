@@ -74,11 +74,17 @@ def _parse_table(text):
 
 
 def teds(pred_html, true_html, structure_only=False):
-    """예측 표와 정답 표의 TEDS (0~1). 예측에 표가 없으면 0."""
+    """예측 표와 정답 표의 TEDS (0~1). 예측에 표가 없으면 0.
+
+    칸이 하나도 없는 빈 표끼리는 1.0, 한쪽만 비었으면 0.0으로 셉니다 (0으로 나누기 방지).
+    """
     pred, true = _parse_table(pred_html), _parse_table(true_html)
     if pred is None or true is None:
         return 0.0
-    n_nodes = max(len(pred.xpath(".//*")), len(true.xpath(".//*")))
+    n_pred, n_true = len(pred.xpath(".//*")), len(true.xpath(".//*"))
+    if n_pred == 0 or n_true == 0:
+        return 1.0 if n_pred == n_true else 0.0
+    n_nodes = max(n_pred, n_true)
     distance = APTED(_to_tree(pred, structure_only), _to_tree(true, structure_only),
                      CellConfig()).compute_edit_distance()
     return 1.0 - distance / n_nodes

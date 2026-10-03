@@ -1,0 +1,15 @@
+# 13-4 — LLM(Qwen) 없이 PaddleOCR-VL과 엔진만 (12GB GPU 한 장). docker-compose.yml에 덧씌움
+# 실행: docker compose -f docker-compose.yml -f docker-compose.nollm.yml up -d --build
+#   항목 추출이 빠지고, 정밀 OCR이 반복 생성하면 다시 읽는 대신 빠른 OCR 결과를 씀
+services:
+  vl:
+    command: >-
+      PaddlePaddle/PaddleOCR-VL-1.6 --served-model-name PaddleOCR-VL-1.6-0.9B
+      --gpu-memory-utilization 0.35 --max-model-len 16384
+  llm:
+    profiles: ["llm"]          # 기본 실행에서 뺌
+  engine:
+    environment:
+      OCR_LLM_URL: ""
+    depends_on: !override
+      vl: {condition: service_healthy}

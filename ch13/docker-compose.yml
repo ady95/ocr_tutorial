@@ -1,7 +1,9 @@
 # 13장 — OCR 엔진 한 벌: 정밀 OCR(PaddleOCR-VL) + 범용 VLM 겸 LLM(Qwen3.5-9B FP8) + 엔진 API
 # 실행: cd ch13 && docker compose up -d --build      내리기: docker compose down
 # 확인: curl -F file=@../datasets/ko-ocr-bench/images/card_01.png localhost:8000/v1/ocr
-# GPU 두 장 기준 (0번: PaddleOCR-VL·엔진, 1번: Qwen). 한 장이면 device_ids를 모두 "0"으로 하고 메모리 비율을 줄이세요.
+# GPU 두 장 기준 (0번: PaddleOCR-VL·엔진, 1번: Qwen). 다른 구성은 덧씌우는 파일(override)로 실행합니다 (13-4):
+#   24GB GPU 한 장:      docker compose -f docker-compose.yml -f docker-compose.1gpu.yml up -d --build
+#   LLM 없이(12GB GPU): docker compose -f docker-compose.yml -f docker-compose.nollm.yml up -d --build
 name: ocr-engine
 
 x-gpu: &gpu
@@ -40,4 +42,8 @@ services:
     depends_on:
       vl: {condition: service_healthy}
       llm: {condition: service_healthy}
+    healthcheck:   # 엔진 이미지에는 curl이 없어 Python으로 확인
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      retries: 30
     restart: unless-stopped

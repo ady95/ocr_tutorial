@@ -25,6 +25,15 @@ def to_gray(img):
     return img if img.ndim == 2 else cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 
+def to_rgb(img):
+    """OpenCV의 BGR 컬러 배열을 RGB로 바꿉니다. 흑백(2차원)은 그대로 돌려줍니다.
+
+    pytesseract는 numpy 배열을 RGB로 읽으므로, cv2로 읽은 컬러 이미지는 넘기기 전에 바꿔야 합니다.
+    (PaddleOCR은 BGR을 기대하므로 바꾸지 않습니다.)
+    """
+    return cv2.cvtColor(img, cv2.COLOR_BGR2RGB) if img.ndim == 3 else img
+
+
 def upscale(img, min_height=1000, max_scale=3.0):
     """세로가 min_height보다 작으면 비율을 유지하며 키웁니다 (작은 글자 확대)."""
     h = img.shape[0]

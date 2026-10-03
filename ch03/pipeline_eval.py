@@ -2,6 +2,7 @@
 
 Tesseract: 기울기 보정(각도는 그림자를 지운 이미지로 추정, 회전은 원본에) → 평균 신뢰도가 85 미만이면
            180도 회전·확대 후보를 만들어 신뢰도가 가장 높은 쪽 선택
+           (--tesseract-mode simple: 비교용으로 OSD 방향 보정 → 기울기 보정 → 세로 1,000픽셀 미만이면 확대를 그대로 이어 붙임)
 PaddleOCR: 그대로 읽고, 평균 신뢰도가 0.8 미만일 때만 180도 돌려 다시 읽어 신뢰도가 높은 쪽 선택
            (--paddle-mode orient: 비교용으로 문서 방향 분류 모델을 켬)
 
@@ -22,6 +23,28 @@ import preprocess as pp  # noqa: E402
 from ocr_eval import cer, load_samples  # noqa: E402
 
 
+def tesseract_simple():
+    """03-1~03-3에서 효과가 있던 처리를 그대로 이어 붙인 첫 시도: OSD 방향 보정 → 기울기 보정 → 확대."""
+    import pytesseract
+    config = "--psm 4"
+    codes = {90: cv2.ROTATE_90_CLOCKWISE, 180: cv2.ROTATE_180, 270: cv2.ROTATE_90_COUNTERCLOCKWISE}
+
+    def prepare(img):
+        try:
+            angle = int(re.search(r"Rotate: (\d+)", pytesseract.image_to_osd(pp.to_rgb(img))).group(1))
+            img = cv2.rotate(img, codes[angle]) if angle in codes else img
+        except pytesseract.TesseractError:
+            pass
+        skew = pp.estimate_skew(pp.remove_shadow(img))
+        img = pp.rotate(img, skew) if abs(skew) >= 0.5 else img
+        return pp.upscale(img)
+
+    def read(img):
+        return pytesseract.image_to_string(pp.to_rgb(img), lang="kor+eng", config=config)
+
+    return read, prepare
+
+
 def tesseract_pipeline(threshold=85):
     """기울기 보정은 항상 하고, 평균 신뢰도가 threshold 미만이면 180도 회전·확대 후보 중 가장 확신하는 쪽을 고른다."""
     import pytesseract
@@ -29,7 +52,7 @@ def tesseract_pipeline(threshold=85):
     config = "--psm 4"
 
     def confidence(img):
-        data = pytesseract.image_to_data(img, lang="kor+eng", config=config, output_type=pytesseract.Output.DICT)
+        data = pytesseract.image_to_data(pp.to_rgb(img), lang="kor+eng", config=config, output_type=pytesseract.Output.DICT)
         conf = [float(c) for c, w in zip(data["conf"], data["text"]) if w.strip() and float(c) >= 0]
         return statistics.mean(conf) if conf else 0.0
 
@@ -45,7 +68,7 @@ def tesseract_pipeline(threshold=85):
         return best
 
     def read(img):
-        return pytesseract.image_to_string(img, lang="kor+eng", config=config)
+        return pytesseract.image_to_string(pp.to_rgb(img), lang="kor+eng", config=config)
 
     return read, prepare
 
@@ -80,10 +103,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--engine", choices=["paddle", "tesseract"], required=True)
     ap.add_argument("--paddle-mode", choices=["orient", "flip"], default="flip")
+    ap.add_argument("--tesseract-mode", choices=["confidence", "simple"], default="confidence")
     args = ap.parse_args()
 
     if args.engine == "tesseract":
-        read, prepare = tesseract_pipeline()
+        read, prepare = tesseract_simple() if args.tesseract_mode == "simple" else tesseract_pipeline()
     else:
         read, prepare = paddle_pipeline(args.paddle_mode)
     before, after = defaultdict(list), defaultdict(list)
@@ -96,7 +120,8 @@ def main():
         else:
             after[cat].append(cer(gt["text"], read(prepare(img))))
 
-    print(f"engine={args.engine} paddle_mode={args.paddle_mode}")
+    mode = args.tesseract_mode if args.engine == "tesseract" else args.paddle_mode
+    print(f"engine={args.engine} mode={mode}")
     print(f"{'범주':14s} {'장수':>4s} {'전처리 전':>9s} {'전처리 후':>9s} {'변화':>8s}")
     all_b, all_a = [], []
     for cat in sorted(before):

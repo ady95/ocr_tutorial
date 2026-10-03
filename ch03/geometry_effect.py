@@ -60,7 +60,7 @@ def make_engine(name):
     def osd_rotate(img):
         """OSD가 알려 준 각도만큼 돌려 바로 세웁니다. 판별에 실패하면 그대로 둡니다."""
         try:
-            osd = pytesseract.image_to_osd(img)
+            osd = pytesseract.image_to_osd(pp.to_rgb(img))
         except pytesseract.TesseractError:
             return img
         angle = int(re.search(r"Rotate: (\d+)", osd).group(1))
@@ -70,7 +70,7 @@ def make_engine(name):
     def read(img, oriented=False):
         if oriented:
             img = osd_rotate(img)
-        return pytesseract.image_to_string(img, lang="kor+eng", config="--psm 4")
+        return pytesseract.image_to_string(pp.to_rgb(img), lang="kor+eng", config="--psm 4")
     return read
 
 

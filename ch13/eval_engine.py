@@ -5,6 +5,7 @@ collect: 장마다 빠른 OCR(+ 180도 확인) → PaddleOCR-VL → Qwen3.5(VLM)
 report:  저장한 결과로 ① 유형 판별 정확도 ② 방향 보정 ③ 정책별 CER·시간(빠른 OCR만 / 정밀 OCR만 / 엔진) 을 계산
 extract: 명함·세금계산서·영수증을 엔진 그대로(판별 → 추출 → 검증) 처리해 필드 정확도와 경고의 적중률을 잼
 실행: python eval_engine.py collect   →   python eval_engine.py report   →   python eval_engine.py extract
+      LLM 서버 없이(12GB GPU, run_servers.sh --no-llm): --llm-url "" 을 붙임. VLM 다시 읽기와 extract는 빠짐
 """
 import argparse
 import json
@@ -42,16 +43,16 @@ def timed(fn, *a):
 
 def collect(args):
     from ocrengine import OcrEngine
-    eng = OcrEngine(vl_url=args.vl_url, llm_url=args.llm_url)
+    eng = OcrEngine(vl_url=args.vl_url, llm_url=args.llm_url or None)
     blank = cv2.imread(str(next(iter(load_samples()))[0]["image_path"]))
-    for warm in (eng.fast_ocr, eng.vl_ocr, eng.vlm_ocr):  # 첫 실행(모델 초기화)은 시간에서 뺌
+    for warm in (eng.fast_ocr, eng.vl_ocr) + ((eng.vlm_ocr,) if eng.llm else ()):  # 첫 실행은 시간에서 뺌
         warm(blank)
     saved = {}
     for meta, gt in load_samples():
         img = cv2.imread(meta["image_path"])
         (fixed, lines, angle), t_fast = timed(eng.read_upright, img)
         vl, t_vl = timed(eng.vl_ocr, fixed)
-        vlm, t_vlm = timed(eng.vlm_ocr, fixed)
+        vlm, t_vlm = timed(eng.vlm_ocr, fixed) if eng.llm else (None, 0.0)
         saved[meta["id"]] = {"angle": angle, "size": [fixed.shape[1], fixed.shape[0]], "lines": lines, "vl": vl, "vlm": vlm,
                              "times": {"fast_ocr": t_fast, "vl_ocr": t_vl, "vlm_ocr": t_vlm}}
         print(meta["id"], angle, t_fast, t_vl, t_vlm, flush=True)
@@ -65,6 +66,8 @@ def policy(st, threshold):
     r1, d1 = compression_ratio(st["vl"]["text"]), disagreement(fast, st["vl"]["text"])
     if r1 <= REPEAT_RATIO and d1 <= threshold:
         return st["vl"]["text"], False
+    if st["vlm"] is None:  # LLM 서버 없이 모은 결과: 반복 생성이면 빠른 OCR 결과를 씀
+        return (fast if r1 > REPEAT_RATIO else st["vl"]["text"]), False
     r2, d2 = compression_ratio(st["vlm"]["text"]), disagreement(fast, st["vlm"]["text"])
     pick = st["vlm"]["text"] if r2 <= REPEAT_RATIO and (r1 > REPEAT_RATIO or d2 < d1) else st["vl"]["text"]
     return pick, True
@@ -102,9 +105,11 @@ def report(args):
         picked, retry = policy(st, args.threshold)
         retried += [meta["id"]] if retry else []
         base = t["fast_ocr"]
-        for name, text, sec in [("빠른 OCR만", fast, base), ("정밀 OCR만", st["vl"]["text"], base + t["vl_ocr"]),
-                                ("VLM만", st["vlm"]["text"], base + t["vlm_ocr"]),
-                                (f"엔진 (기준 {args.threshold})", picked, base + t["vl_ocr"] + (t["vlm_ocr"] if retry else 0))]:
+        policies = [("빠른 OCR만", fast, base), ("정밀 OCR만", st["vl"]["text"], base + t["vl_ocr"])]
+        if st["vlm"] is not None:
+            policies.append(("VLM만", st["vlm"]["text"], base + t["vlm_ocr"]))
+        policies.append((f"엔진 (기준 {args.threshold})", picked, base + t["vl_ocr"] + (t["vlm_ocr"] if retry else 0)))
+        for name, text, sec in policies:
             c = cer(gt["text"], text)
             for key in ("전체", cat):
                 rows[name][key].append((c, sec))
@@ -126,6 +131,9 @@ def extract_eval(args):
     """명함·세금계산서·영수증 40장을 엔진 그대로 처리: 판별 → 정밀 OCR → 추출 → 검증."""
     from extract import flat, norm
     from ocrengine import OcrEngine
+    if not args.llm_url:
+        print("항목 추출은 LLM 서버가 필요합니다. LLM 없이 실행했다면 이 단계는 건너뜁니다.")
+        return
     eng = OcrEngine(vl_url=args.vl_url, llm_url=args.llm_url)
     stats = Counter()
     saved = {}
@@ -156,7 +164,7 @@ def main():
     ap.add_argument("step", choices=["collect", "report", "extract"])
     ap.add_argument("--threshold", type=float, default=0.3, help="빠른 OCR과 정밀 OCR의 차이가 이보다 크면 다시 읽음")
     ap.add_argument("--vl-url", default="http://localhost:18118/v1")
-    ap.add_argument("--llm-url", default="http://localhost:18001/v1")
+    ap.add_argument("--llm-url", default="http://localhost:18001/v1", help="LLM 서버 없이 실행하려면 빈 값 \"\"")
     args = ap.parse_args()
     {"collect": collect, "report": report, "extract": extract_eval}[args.step](args)
 

@@ -3,9 +3,13 @@
 #   LLM:    Qwen/Qwen3.5-9B, FP8 (RTX 3090 한 장, 11-2)  → http://localhost:18001/v1
 #   임베딩: BAAI/bge-m3 (다국어 검색용, 1024차원)       → http://localhost:18002/v1/embeddings
 # 사용: ./run_servers.sh [LLM GPU 번호] [임베딩 GPU 번호]   (기본 1 0)
-# 내리기: kill $(cat output/llm.pid output/embed.pid)
-LLM_GPU=${1:-1}; EMB_GPU=${2:-0}
+# 내리기: ./run_servers.sh stop   (13장으로 넘어가기 전에 내리세요. 13장 서버도 18001 포트를 씁니다)
 cd "$(dirname "$0")"; mkdir -p output
+if [ "$1" = "stop" ]; then
+  for f in output/llm.pid output/embed.pid; do [ -f "$f" ] && kill "$(cat "$f")" 2>/dev/null && echo "내림: $f"; rm -f "$f"; done
+  exit 0
+fi
+LLM_GPU=${1:-1}; EMB_GPU=${2:-0}
 for p in 18001 18002; do
   if (ss -ltn 2>/dev/null || netstat -ltn 2>/dev/null) | grep -qE "[:.]$p[[:space:]]"; then echo "포트 $p 사용 중"; exit 1; fi
 done
