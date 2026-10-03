@@ -1,0 +1,43 @@
+# 13장 — OCR 엔진 한 벌: 정밀 OCR(PaddleOCR-VL) + 범용 VLM 겸 LLM(Qwen3.5-9B FP8) + 엔진 API
+# 실행: cd ch13 && docker compose up -d --build      내리기: docker compose down
+# 확인: curl -F file=@../datasets/ko-ocr-bench/images/card_01.png localhost:8000/v1/ocr
+# GPU 두 장 기준 (0번: PaddleOCR-VL·엔진, 1번: Qwen). 한 장이면 device_ids를 모두 "0"으로 하고 메모리 비율을 줄이세요.
+name: ocr-engine
+
+x-gpu: &gpu
+  driver: nvidia
+  capabilities: [gpu]
+
+services:
+  vl:
+    image: vllm/vllm-openai:${VLLM_TAG:-v0.25.0}
+    command: >-
+      PaddlePaddle/PaddleOCR-VL-1.6 --served-model-name PaddleOCR-VL-1.6-0.9B
+      --gpu-memory-utilization 0.5 --max-model-len 16384
+    volumes: ["${HF_HOME:-~/.cache/huggingface}:/root/.cache/huggingface"]
+    deploy: {resources: {reservations: {devices: [{<<: *gpu, device_ids: ["0"]}]}}}
+    healthcheck: {test: ["CMD", "curl", "-sf", "localhost:8000/health"], interval: 10s, retries: 60}
+
+  llm:
+    image: vllm/vllm-openai:${VLLM_TAG:-v0.25.0}
+    command: >-
+      Qwen/Qwen3.5-9B --quantization fp8 --gpu-memory-utilization 0.9 --max-model-len 16384
+    environment:
+      # RTX 30 시리즈(Ampere)는 FP8 연산 장치가 없어 Marlin 커널을 쓰게 함 (11-1). RTX 40 이후는 지워도 됨
+      VLLM_DISABLED_KERNELS: FlashInferFP8ScaledMMLinearKernel,CutlassFP8ScaledMMLinearKernel,B12xTensorFP8ScaledMMLinearKernel,PerTensorTorchFP8ScaledMMLinearKernel,ChannelWiseTorchFP8ScaledMMLinearKernel
+    volumes: ["${HF_HOME:-~/.cache/huggingface}:/root/.cache/huggingface"]
+    deploy: {resources: {reservations: {devices: [{<<: *gpu, device_ids: ["1"]}]}}}
+    healthcheck: {test: ["CMD", "curl", "-sf", "localhost:8000/health"], interval: 10s, retries: 60}
+
+  engine:
+    build: {context: .., dockerfile: ch13/Dockerfile}
+    image: ocr-engine:gpu
+    environment:
+      OCR_VL_URL: http://vl:8000/v1
+      OCR_LLM_URL: http://llm:8000/v1
+    ports: ["${OCR_BIND:-127.0.0.1}:${OCR_PORT:-8000}:8000"]   # 다른 컴퓨터에서 받으려면 OCR_BIND=0.0.0.0
+    deploy: {resources: {reservations: {devices: [{<<: *gpu, device_ids: ["0"]}]}}}
+    depends_on:
+      vl: {condition: service_healthy}
+      llm: {condition: service_healthy}
+    restart: unless-stopped

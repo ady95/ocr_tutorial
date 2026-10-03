@@ -1,0 +1,5 @@
+# Docker 빌드 문맥에서 뺄 것 (13장 엔진 이미지는 저장소 최상위를 문맥으로 씀)
+.git
+datasets
+**/output
+**/__pycache__

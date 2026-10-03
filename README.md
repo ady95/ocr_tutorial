@@ -36,6 +36,7 @@ python ocr_tutorial/ch02/check_env.py
 | ch10 | OCR Benchmark: 엔진 어댑터(engines.py)·실행기(bench.py)·채점기(score.py), vLLM 서버 실행 스크립트, AI Hub 데이터 변환(aihub_prepare.py) |
 | ch11 | 최적화와 배포: 단계별 시간 측정(profile_paddle.py), vLLM 처리량(throughput.py, run_vllm.sh), VRAM 계산(vram_calc.py), FastAPI OCR 서버와 CPU·GPU Dockerfile(server/) |
 | ch12 | OCR과 LLM 연결: LLM·임베딩 서버 실행(run_servers.sh), 구조화 추출과 근거·규칙 검증(extract.py), RAG 평가 질문 생성(make_qa.py, qa.jsonl), OCR 결과별 RAG 측정(rag.py, summarize_rag.py) |
+| ch13 | 나만의 OCR 엔진: 빠른 OCR·유형 판별·정밀 OCR·검증·항목 추출을 묶은 엔진(ocrengine/), 단계별 평가(eval_engine.py), API 서버(server.py, client.py), vLLM 서버 실행(run_servers.sh), Dockerfile·docker-compose.yml |
 
 ## 실측 환경
 
