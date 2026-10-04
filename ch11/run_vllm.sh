@@ -13,7 +13,7 @@ if (ss -ltn 2>/dev/null || netstat -ltn 2>/dev/null) | grep -qE "[:.]$PORT[[:spa
 T0=$(date +%s)
 CUDA_VISIBLE_DEVICES=$GPU vllm serve $MODEL --port $PORT --max-model-len 16384 "$@" > output/serve_$NAME.log 2>&1 &
 SPID=$!
-until curl -sf localhost:$PORT/health >/dev/null; do
+until curl -sf --connect-timeout 3 --max-time 5 localhost:$PORT/health >/dev/null; do
   sleep 5
   kill -0 $SPID 2>/dev/null || { echo "$NAME 서버 시작 실패"; grep -E "Error|error" output/serve_$NAME.log | tail -5; exit 1; }
 done

@@ -25,7 +25,7 @@ T0=$(date +%s)
 CUDA_VISIBLE_DEVICES=$GPU vllm serve $MODEL --port $PORT --host 127.0.0.1 --max-model-len 16384 "$@" > output/serve_$ENGINE.log 2>&1 &
 SPID=$!
 trap 'kill $SPID 2>/dev/null; wait $SPID 2>/dev/null' EXIT   # 중간에 실패하거나 Ctrl+C로 멈춰도 서버를 내림
-until curl -sf localhost:$PORT/health >/dev/null; do
+until curl -sf --connect-timeout 3 --max-time 5 localhost:$PORT/health >/dev/null; do
   sleep 5
   kill -0 $SPID 2>/dev/null || { echo "서버 시작 실패"; tail -30 output/serve_$ENGINE.log; exit 1; }
 done

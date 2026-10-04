@@ -15,7 +15,7 @@ T0=$(date +%s)
 # --max-model-len은 뒤에 다시 주면 덮어쓸 수 있습니다 (DeepSeek-OCR 2는 8192가 최대)
 CUDA_VISIBLE_DEVICES=$GPU vllm serve $MODEL --port $PORT --max-model-len 16384 "$@" > serve_$NAME.log 2>&1 &
 SPID=$!
-until curl -sf localhost:$PORT/health >/dev/null; do
+until curl -sf --connect-timeout 3 --max-time 5 localhost:$PORT/health >/dev/null; do
   sleep 5
   kill -0 $SPID 2>/dev/null || { echo "서버 시작 실패"; tail -30 serve_$NAME.log; exit 1; }
 done

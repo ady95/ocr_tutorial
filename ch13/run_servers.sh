@@ -36,7 +36,7 @@ trap 'echo "시작 실패 — 띄운 서버를 내립니다"; stop; exit 1' ERR 
 
 wait_ready() {  # 포트, pid 파일, 모델 이름, 로그
   local t0=$SECONDS
-  until curl -sf "localhost:$1/v1/models" | grep -q "$3"; do
+  until curl -sf --connect-timeout 3 --max-time 5 "localhost:$1/v1/models" | grep -q "$3"; do  # 응답이 없어도 5초 안에 돌아옴
     sleep 5
     kill -0 "$(cat "$2")" 2>/dev/null || { echo "$3 서버 시작 실패"; tail -5 "$4"; return 1; }
     [ $((SECONDS - t0)) -lt "$READY_TIMEOUT" ] || { echo "$3 서버가 ${READY_TIMEOUT}초 안에 준비되지 않음"; tail -5 "$4"; return 1; }
