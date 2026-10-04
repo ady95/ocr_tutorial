@@ -20,7 +20,9 @@ RESULTS = [  # (이름, 결과 파일)
     ("PaddleOCR", HERE.parent / "ch06" / "output" / "ocr_paddle.json"),
     ("PaddleOCR-VL", HERE / "output" / "paddlevl.json"),
     ("Surya OCR 2", HERE / "output" / "surya.json"),
-    ("DeepSeek-OCR 2", HERE / "output" / "vlm_deepseek.json"),
+    # DeepSeek-OCR 2는 공식 방법(deepseek_hf.py)의 결과를 씀. vLLM 경로(vlm_bench.py --kind deepseek)의 결과는
+    # vlm_deepseek.json으로 따로 저장되며, 08-5에서 본 것처럼 정상 출력이 아니므로 비교에 쓰지 않음
+    ("DeepSeek-OCR 2", HERE / "output" / "vlm_deepseek_hf.json"),
     ("VARCO-OCR", HERE / "output" / "vlm_varco.json"),
     ("Qwen3.5-4B", HERE / "output" / "vlm_qwen35_4b_html_pp.json"),
     ("Qwen3.5-9B", HERE / "output" / "vlm_qwen35_9b_html_pp.json"),

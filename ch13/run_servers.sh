@@ -31,12 +31,15 @@ for p in $PORTS; do
     echo "포트 $p 사용 중 — 앞 장(12장 등)의 서버가 남아 있다면 먼저 내리세요"; exit 1
   fi
 done
-trap 'echo "시작 실패 — 띄운 서버를 내립니다"; stop; exit 1' ERR INT
+READY_TIMEOUT=${READY_TIMEOUT:-1200}   # 이 시간(초) 안에 준비되지 않으면 실패로 보고 띄운 서버를 내림
+trap 'echo "시작 실패 — 띄운 서버를 내립니다"; stop; exit 1' ERR INT TERM
 
 wait_ready() {  # 포트, pid 파일, 모델 이름, 로그
+  local t0=$SECONDS
   until curl -sf "localhost:$1/v1/models" | grep -q "$3"; do
     sleep 5
     kill -0 "$(cat "$2")" 2>/dev/null || { echo "$3 서버 시작 실패"; tail -5 "$4"; return 1; }
+    [ $((SECONDS - t0)) -lt "$READY_TIMEOUT" ] || { echo "$3 서버가 ${READY_TIMEOUT}초 안에 준비되지 않음"; tail -5 "$4"; return 1; }
   done
 }
 
@@ -54,5 +57,5 @@ if [ $NO_LLM = 0 ]; then
   echo $! > output/llm.pid
   wait_ready 18001 output/llm.pid Qwen output/serve_llm.log
 fi
-trap - ERR INT
+trap - ERR INT TERM
 echo "준비 완료 (내리기: ./run_servers.sh stop)"

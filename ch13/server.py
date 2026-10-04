@@ -33,7 +33,12 @@ QUEUE_SIZE = int(os.environ.get("OCR_QUEUE_SIZE", "32"))
 def pdf_pages(data, scale=2.0):
     """PDF 쪽을 이미지(BGR)로. 글자가 들어 있는 PDF도 같은 흐름으로 처리합니다 (표·유형 판별을 맞추려고)."""
     import pypdfium2 as pdfium
-    pdf = pdfium.PdfDocument(data)
+    try:
+        pdf = pdfium.PdfDocument(data)
+    except pdfium.PdfiumError as e:  # 손상된 PDF는 서버 오류(500)가 아니라 입력 오류로 돌려줌
+        raise HTTPException(400, f"PDF를 열 수 없습니다: {e}")
+    if len(pdf) == 0:
+        raise HTTPException(400, "쪽이 없는 PDF입니다")
     if len(pdf) > MAX_PAGES:
         raise HTTPException(413, f"PDF는 {MAX_PAGES}쪽까지 받습니다 ({len(pdf)}쪽)")
     return [np.array(pdf[i].render(scale=scale).to_pil().convert("RGB"))[:, :, ::-1].copy() for i in range(len(pdf))]

@@ -69,7 +69,12 @@ class OcrWorker:
 
     def process_pdf(self, data):
         import pypdfium2 as pdfium
-        pdf = pdfium.PdfDocument(data)
+        try:
+            pdf = pdfium.PdfDocument(data)
+        except pdfium.PdfiumError as e:  # 손상된 PDF는 서버 오류(500)가 아니라 입력 오류(400)로
+            raise ValueError(f"PDF를 열 수 없습니다: {e}")
+        if len(pdf) == 0:
+            raise ValueError("쪽이 없는 PDF입니다")
         if len(pdf) > MAX_PAGES:
             raise ValueError(f"PDF는 {MAX_PAGES}쪽까지 처리합니다 (받은 파일 {len(pdf)}쪽)")
         pages = []

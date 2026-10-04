@@ -7,6 +7,7 @@
 출력: output/<pdf 이름>.md, 페이지별 CER(정답은 pdf/pdf_gt.json)
 """
 import json
+import os
 import statistics
 import sys
 import time
@@ -21,6 +22,14 @@ from ocr_eval import cer  # noqa: E402
 HERE = Path(__file__).resolve().parent
 TEXT_LABELS = {"doc_title", "paragraph_title", "text", "abstract", "content", "header", "footer", "number"}
 MIN_CHARS = 20  # 이보다 글자가 적으면 텍스트 정보가 없는 페이지(스캔)로 본다
+
+
+def cpu_threads():
+    """Paddle CPU 추론 스레드 수. OMP_THREAD_LIMIT(일부 컨테이너·CI에서 설정됨)보다 많이 요청하면
+    PP-StructureV3의 CPU 결과가 오류 없이 깨진 글자로 나오는 것을 확인했습니다(07-3). 제한이 있으면 그 이하로 맞춥니다."""
+    n = os.cpu_count() or 1
+    limit = os.environ.get("OMP_THREAD_LIMIT", "")
+    return min(n, int(limit)) if limit.isdigit() and int(limit) > 0 else n
 
 
 def page_text(page):
@@ -60,7 +69,8 @@ def main():
     args = ap.parse_args()
     pipeline = PPStructureV3(lang="korean", use_doc_orientation_classify=False, use_doc_unwarping=False,
                              use_textline_orientation=False, use_seal_recognition=False,
-                             use_formula_recognition=False, use_chart_recognition=False)
+                             use_formula_recognition=False, use_chart_recognition=False,
+                             cpu_threads=cpu_threads())  # GPU에서는 쓰이지 않음
     gt = json.loads((HERE / "pdf" / "pdf_gt.json").read_text(encoding="utf-8"))
     out_dir = HERE / "output"
     out_dir.mkdir(exist_ok=True)
