@@ -86,7 +86,7 @@ def report(args):
         if got != want:
             wrong.append(f"{meta['id']}({want}→{got})")
     types = ["invoice", "receipt", "card", "table", "document"]
-    print("① 유형 판별 (행: 정답, 열: 판별)")
+    print("[1] 유형 판별 (행: 정답, 열: 판별)")
     print("정답\\판별".ljust(10) + "".join(t[:8].rjust(9) for t in types))
     for w in types:
         print(w.ljust(10) + "".join(str(confusion[(w, g)]).rjust(9) for g in types))
@@ -94,7 +94,7 @@ def report(args):
     print(f"정확도 {ok}/{len(samples)} = {ok / len(samples):.3f}  틀림: {', '.join(wrong) or '없음'}")
     # ② 방향 보정
     rot = Counter((m["category"] == "rotated", stages[m["id"]]["angle"]) for m, _ in samples)
-    print("② 방향 보정: (회전 범주인가, 보정 각도) →", dict(rot))
+    print("[2] 방향 보정: (회전 범주인가, 보정 각도) →", dict(rot))
     # ③ 정책별 CER·시간
     rows = defaultdict(lambda: defaultdict(list))
     retried = []
@@ -115,7 +115,7 @@ def report(args):
                 rows[name][key].append((c, sec))
     cats = ["전체", "print_ko", "print_mixed", "print_numeric", "small", "multicol", "table", "receipt", "invoice", "card",
             "lowres", "rotated"]
-    print(f"③ 정책별 CER (평균) — 재시도 {len(retried)}장: {', '.join(retried)}")
+    print(f"[3] 정책별 CER (평균) — 재시도 {len(retried)}장: {', '.join(retried)}")
     print("정책".ljust(18) + "".join(c[:9].rjust(10) for c in cats) + "  장당 초(중앙값)")
     for name, d in rows.items():
         print(name.ljust(18) + "".join(f"{statistics.mean(c for c, _ in d[k]):10.3f}" for k in cats)
