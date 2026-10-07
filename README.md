@@ -44,3 +44,10 @@ python ocr_tutorial/ch02/check_env.py
 - Ubuntu 22.04, NVIDIA RTX 3060 12GB
 - Ubuntu 22.04, NVIDIA RTX 3090 24GB x 2 (03·07장 일부, 08장~)
 - Python 3.12, PyTorch 2.14.1, OpenCV 5.0.0
+
+## 라이선스
+
+- 예제 코드: [Apache License 2.0](LICENSE). 상업적 이용·수정·재배포가 자유롭습니다. 재배포할 때는 LICENSE와 [NOTICE](NOTICE)를 함께 넣어 주세요.
+- common/teds.py: PubTabNet(IBM, Apache 2.0)의 TEDS 구현을 수정한 것입니다.
+- datasets/ko-ocr-bench: 평가셋은 CC BY 4.0, 글꼴은 SIL Open Font License 1.1을 따릅니다 (코드 라이선스와 별도).
+- 예제가 내려받아 쓰는 OCR 엔진·모델은 각자의 라이선스를 따릅니다. 책의 부록 B를 참고하세요.

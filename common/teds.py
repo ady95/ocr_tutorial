@@ -9,6 +9,9 @@ PubTabNet(IBM)의 TEDS 구현(Apache 2.0, PaddleOCR ppstructure/table/table_metr
 thead·tbody 같은 묶음 태그는 무시. structure_only=True이면 내용 없이 구조만 비교(TEDS-S).
 
 필요 패키지: pip install apted lxml rapidfuzz
+
+원본: https://github.com/ibm-aur-nlp/PubTabNet (src/metric.py)
+  Copyright 2020 IBM, Apache License 2.0. 이 파일의 수정분도 Apache License 2.0을 따릅니다.
 """
 import re
 import unicodedata
