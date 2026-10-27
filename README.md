@@ -1,9 +1,16 @@
 # OCR 따라하기 — 예제 코드
 
+<img src="assets/book-cover.png" alt="OCR 따라하기 책 표지" width="300">
+
 위키독스 책 「OCR 따라하기 (최신 오픈소스로 배우는 문자 인식과 Document AI)」의 예제 코드 저장소입니다.
 
-- 책: [https://wikidocs.net/book/21475](https://wikidocs.net/book/21475)
 - 폴더 이름은 장 번호를 따릅니다 (ch02 = 02장)
+
+## 책 구매
+
+- YES24: [https://www.yes24.com/product/goods/197653212](https://www.yes24.com/product/goods/197653212)
+- 교보문고: [https://ebook-product.kyobobook.co.kr/dig/epd/ebook/E000013666717](https://ebook-product.kyobobook.co.kr/dig/epd/ebook/E000013666717)
+- 위키독스: [https://wikidocs.net/book/21475](https://wikidocs.net/book/21475)
 
 ## 시작하기
 
